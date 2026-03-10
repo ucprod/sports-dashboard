@@ -1,1 +1,39 @@
+# Environment variables
 .env.local
+.env.*.local
+.env
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Next.js
+/.next/
+/out/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+/dist/
+/build/
+
+# Testing
+/.coverage/
+/coverage/
+
+# Logs
+*.log
+logs/
