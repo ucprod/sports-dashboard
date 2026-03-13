@@ -13,7 +13,6 @@ import {
   StandingsRecord,
 } from "@/types";
 import { Player, Game, Standing } from "@/types/database";
-import { getNHLHeadshotUrl } from "@/lib/nhl-api";
 
 /**
  * Transform NHL API RosterPlayer to database Player format
@@ -32,7 +31,7 @@ function transformRosterPlayer(nhlPlayer: RosterPlayer): Player {
     position: nhlPlayer.position.code,
     number: nhlPlayer.jerseyNumber,
     jersey_number: nhlPlayer.jerseyNumber,
-    nhl_headshot_url: nhlPlayer.headshotUrl || getNHLHeadshotUrl(nhlPlayer.person.id),
+    nhl_headshot_url: `/api/portrait/${nhlPlayer.person.id}`,
     portrait_url: "", // Will be populated by image generation pipeline (Phase 4)
     portrait_generated_at: null,
     is_active: true,

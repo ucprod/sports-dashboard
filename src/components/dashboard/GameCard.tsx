@@ -1,38 +1,50 @@
 /**
  * GameCard Component
- * Compact horizontal strip showing a single game result or upcoming game.
+ * Retro 16-bit stat panel showing a single game result or upcoming game.
+ * Styled after NHL '94 player card stat panels — dark field, gold dashed border,
+ * chunky mono font, color-coded label tabs.
  */
 
 import { Game } from "@/types/database";
 
 interface GameCardProps {
   game: Game | null;
+  /** "last" = completed game with score; "next" = upcoming game */
   type: "last" | "next";
   loading?: boolean;
 }
 
+/** Dashed gold border style shared across all card states */
+const panelBase =
+  "flex items-center gap-3 bg-[#060c18] border-2 border-dashed px-3 py-2.5 h-full";
+
 export default function GameCard({ game, type, loading = false }: GameCardProps) {
   const isLast = type === "last";
   const label = isLast ? "LAST GAME" : "NEXT GAME";
-  const emptyMessage = isLast ? "No recent games" : "No games scheduled";
+  const emptyMessage = isLast ? "NO RECENT GAMES" : "NO GAMES SCHEDULED";
 
-  const labelColor = isLast ? "text-oilers-orange" : "text-[#6699ff]";
+  // Last game uses orange tab; next game uses blue tab — matching Oilers palette
+  const borderColor = isLast ? "border-oilers-orange/50" : "border-oilers-blue/60";
+  const labelBg = isLast ? "bg-oilers-orange text-[#080d1a]" : "bg-oilers-blue text-oilers-gold";
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3 h-full">
-        <div className="w-16 h-3 bg-white/10 rounded animate-pulse" />
-        <div className="flex-1 h-3 bg-white/10 rounded animate-pulse" />
-        <div className="w-10 h-5 bg-white/10 rounded animate-pulse" />
+      <div className={`${panelBase} ${borderColor} font-mono`}>
+        <div className="w-20 h-2.5 bg-white/10 animate-pulse" />
+        <div className="flex-1 h-2.5 bg-white/10 animate-pulse" />
+        <div className="w-12 h-4 bg-white/10 animate-pulse" />
       </div>
     );
   }
 
   if (!game) {
     return (
-      <div className={`flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3`}>
-        <span className={`text-[10px] font-bold tracking-widest shrink-0 ${labelColor}`}>{label}</span>
-        <span className="text-gray-500 text-xs">{emptyMessage}</span>
+      <div className={`${panelBase} ${borderColor} font-mono`}>
+        {/* Label tab */}
+        <span className={`text-[9px] font-bold tracking-widest shrink-0 uppercase px-1.5 py-0.5 ${labelBg}`}>
+          {label}
+        </span>
+        <span className="text-gray-600 text-[10px] uppercase tracking-wider">{emptyMessage}</span>
       </div>
     );
   }
@@ -42,8 +54,8 @@ export default function GameCard({ game, type, loading = false }: GameCardProps)
   const ourScore = isTeamHome ? game.home_score : game.away_score;
   const opponentScore = isTeamHome ? game.away_score : game.home_score;
 
-  // Shorten opponent name to last word (e.g. "Toronto Maple Leafs" -> "Maple Leafs")
-  const opponentShort = opponentTeam.split(" ").slice(-2).join(" ");
+  // Shorten opponent name to last two words (e.g. "Toronto Maple Leafs" -> "Maple Leafs")
+  const opponentShort = opponentTeam.split(" ").slice(-2).join(" ").toUpperCase();
 
   const isDateOnly = !game.game_date.includes("T");
   const gameDate = new Date(
@@ -56,60 +68,67 @@ export default function GameCard({ game, type, loading = false }: GameCardProps)
     ...(isDateOnly ? {} : { hour: "numeric", minute: "2-digit" }),
   }).format(gameDate);
 
+  // W/L/T outcome — retro badge with flat color fill
   let resultBadge = "";
-  let resultClasses = "text-gray-500";
+  let resultBg = "";
+  let resultText = "";
 
   if (isLast && ourScore !== null && opponentScore !== null) {
     if (ourScore > opponentScore) {
-      resultClasses = "text-emerald-400 bg-emerald-400/10 border border-emerald-400/30";
+      resultBg = "bg-emerald-500";
+      resultText = "text-[#080d1a]";
       resultBadge = "W";
     } else if (ourScore < opponentScore) {
-      resultClasses = "text-red-400 bg-red-400/10 border border-red-400/30";
+      resultBg = "bg-red-600";
+      resultText = "text-white";
       resultBadge = "L";
     } else {
-      resultClasses = "text-gray-400 bg-gray-400/10 border border-gray-400/30";
+      resultBg = "bg-gray-500";
+      resultText = "text-white";
       resultBadge = "T";
     }
   }
 
   return (
-    <div className="flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3 h-full">
-      {/* Type label */}
-      <span className={`text-[10px] font-bold tracking-widest shrink-0 uppercase ${labelColor}`}>
+    <div className={`${panelBase} ${borderColor} font-mono`}>
+      {/* Label tab — solid color block, no radius */}
+      <span className={`text-[9px] font-bold tracking-widest shrink-0 uppercase px-1.5 py-0.5 ${labelBg}`}>
         {label}
       </span>
 
-      {/* Divider */}
-      <div className="w-px h-6 bg-white/10 shrink-0" />
+      {/* Pixel divider */}
+      <div className="w-px h-5 bg-oilers-gold/20 shrink-0" />
 
       {/* Date */}
-      <span className="text-gray-400 text-xs shrink-0">{formattedDate}</span>
-
-      {/* Home/Away */}
-      <span className="text-[10px] text-gray-600 uppercase tracking-wider shrink-0">
-        {isTeamHome ? "vs" : "@"}
+      <span className="text-oilers-gold/60 text-[10px] shrink-0 uppercase tracking-wider">
+        {formattedDate}
       </span>
 
-      {/* Opponent */}
-      <span className="text-white text-xs font-semibold truncate flex-1 min-w-0">
+      {/* Home/Away indicator */}
+      <span className="text-[10px] text-gray-600 uppercase tracking-widest shrink-0">
+        {isTeamHome ? "VS" : "@"}
+      </span>
+
+      {/* Opponent name */}
+      <span className="text-white text-[11px] font-bold truncate flex-1 min-w-0 tracking-wide">
         {opponentShort}
       </span>
 
-      {/* Score or result */}
+      {/* Score + W/L badge, or status */}
       {isLast && ourScore !== null && opponentScore !== null ? (
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-white font-bold text-sm tabular-nums">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-oilers-gold font-bold text-sm tabular-nums tracking-tight">
             {ourScore}–{opponentScore}
           </span>
           {resultBadge && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${resultClasses}`}>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 ${resultBg} ${resultText}`}>
               {resultBadge}
             </span>
           )}
         </div>
       ) : (
-        <span className="text-gray-500 text-xs shrink-0">
-          {game.status || "Scheduled"}
+        <span className="text-gray-600 text-[10px] shrink-0 uppercase tracking-widest">
+          {game.status || "SCHEDULED"}
         </span>
       )}
     </div>

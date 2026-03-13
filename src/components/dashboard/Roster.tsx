@@ -3,6 +3,9 @@
  * Dense, full-height roster grid organized by position group.
  * Three labeled sections scroll horizontally per group; the overall
  * roster area fills whatever vertical space the layout grants it.
+ *
+ * Visual theme: NHL '94 player card screen — section headers use dashed
+ * gold divider lines, outer panel has a visible retro border, mono font.
  */
 
 import { Player } from "@/types/database";
@@ -14,14 +17,26 @@ interface RosterProps {
   error?: string;
 }
 
-/** Skeleton row of player-card-shaped pulses */
+/** Dashed separator line rendered with a repeating gradient — no border-dashed needed */
+function DashedLine({ color }: { color: string }) {
+  return (
+    <div
+      className="flex-1 h-px"
+      style={{
+        backgroundImage: `repeating-linear-gradient(90deg, ${color} 0px, ${color} 4px, transparent 4px, transparent 8px)`,
+      }}
+    />
+  );
+}
+
+/** Skeleton row of player-card-shaped pulses — retro rect shape */
 function SkeletonRow({ count }: { count: number }) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
+    <div className="flex gap-1.5 overflow-x-auto pb-1">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="shrink-0 w-[88px] rounded-lg bg-white/5 animate-pulse"
+          className="shrink-0 w-[80px] bg-white/5 animate-pulse border border-white/5"
           style={{ aspectRatio: "3/4" }}
         />
       ))}
@@ -32,25 +47,29 @@ function SkeletonRow({ count }: { count: number }) {
 export default function Roster({ players, loading = false, error }: RosterProps) {
   if (error) {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-900/20 border border-red-500/40">
-        <span className="text-red-400 text-sm font-semibold">Roster unavailable</span>
-        <span className="text-red-300/70 text-xs">{error}</span>
+      <div className="flex items-center gap-3 px-3 py-3 bg-[#060c18] border-2 border-dashed border-red-600/50 font-mono">
+        <span className="text-red-400 text-[11px] font-bold uppercase tracking-widest">
+          !! ROSTER ERROR
+        </span>
+        <span className="text-red-300/60 text-[10px] uppercase">{error}</span>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 h-full overflow-hidden">
+      <div className="flex flex-col gap-3 h-full overflow-hidden font-mono">
         {[
-          { label: "FORWARDS", count: 13 },
-          { label: "DEFENSE", count: 8 },
-          { label: "GOALIES", count: 3 },
-        ].map(({ label, count }) => (
-          <div key={label} className="flex flex-col gap-2">
+          { label: "FORWARDS", count: 13, color: "rgba(255,69,0,0.4)" },
+          { label: "DEFENSE", count: 8, color: "rgba(0,51,153,0.6)" },
+          { label: "GOALIES", count: 3, color: "rgba(253,184,39,0.4)" },
+        ].map(({ label, count, color }) => (
+          <div key={label} className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold tracking-widest text-gray-600 uppercase">{label}</span>
-              <div className="flex-1 h-px bg-white/5" />
+              <span className="text-[10px] font-bold tracking-[0.2em] text-gray-700 uppercase">
+                {label}
+              </span>
+              <DashedLine color={color} />
             </div>
             <SkeletonRow count={count} />
           </div>
@@ -65,39 +84,69 @@ export default function Roster({ players, loading = false, error }: RosterProps)
 
   const sections: Array<{
     label: string;
-    color: string;
+    /** Tailwind text color class for the section label */
+    labelColor: string;
+    /** CSS color value for the dashed line gradient */
+    lineColor: string;
     players: Player[];
   }> = [
-    { label: "FORWARDS", color: "text-oilers-orange", players: forwards },
-    { label: "DEFENSE", color: "text-[#6699ff]", players: defense },
-    { label: "GOALIES", color: "text-oilers-gold", players: goalies },
+    {
+      label: "FORWARDS",
+      labelColor: "text-oilers-orange",
+      lineColor: "rgba(255,69,0,0.45)",
+      players: forwards,
+    },
+    {
+      label: "DEFENSE",
+      labelColor: "text-[#6699ff]",
+      lineColor: "rgba(102,153,255,0.45)",
+      players: defense,
+    },
+    {
+      label: "GOALIES",
+      labelColor: "text-oilers-gold",
+      lineColor: "rgba(253,184,39,0.45)",
+      players: goalies,
+    },
   ];
 
   if (players.length === 0) {
     return (
-      <div className="flex items-center justify-center h-32 text-gray-500 text-sm">
-        No players found
+      <div className="flex items-center justify-center h-32 font-mono">
+        <span className="text-gray-600 text-[11px] uppercase tracking-widest">
+          — NO PLAYERS FOUND —
+        </span>
       </div>
     );
   }
 
+  const activeSections = sections.filter((s) => s.players.length > 0);
+
   return (
-    <div className="flex flex-col gap-2 h-full overflow-hidden">
-      {sections.map(({ label, color, players: group }) => {
-        if (group.length === 0) return null;
-        return (
-          <div key={label} className="flex flex-col gap-1 flex-1 min-h-0">
-            {/* Section header */}
+    // Outer retro panel — visible border wrapping the whole roster area
+    <div className="h-full border border-oilers-gold/15 overflow-hidden p-1.5">
+      <div
+        className="h-full overflow-hidden gap-2 font-mono"
+        style={{
+          display: "grid",
+          gridTemplateRows: `repeat(${activeSections.length}, 1fr)`,
+        }}
+      >
+        {activeSections.map(({ label, labelColor, lineColor, players: group }) => (
+          <div key={label} className="flex flex-col gap-1 min-h-0 overflow-hidden">
+            {/* Section header — label + count + dashed line */}
             <div className="flex items-center gap-2 shrink-0">
-              <span className={`text-[10px] font-bold tracking-widest uppercase ${color}`}>
+              <span className={`text-[10px] font-bold tracking-[0.18em] uppercase ${labelColor}`}>
                 {label}
               </span>
-              <span className="text-gray-700 text-[10px]">({group.length})</span>
-              <div className="flex-1 h-px bg-white/5" />
+              <span className="text-gray-700 text-[10px] tabular-nums">
+                [{group.length}]
+              </span>
+              <DashedLine color={lineColor} />
             </div>
 
-            {/* Horizontal scrolling player row — cards fill full section height */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-thin flex-1 min-h-0">
+            {/* Horizontal scrolling player row — cards fill the grid cell height */}
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-thin min-h-0 flex-1">
               {group.map((player) => (
                 <div key={player.id} className="shrink-0 h-full aspect-[3/4]">
                   <RosterPlayer player={player} />
@@ -105,8 +154,8 @@ export default function Roster({ players, loading = false, error }: RosterProps)
               ))}
             </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 }

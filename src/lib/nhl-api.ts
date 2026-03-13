@@ -360,11 +360,11 @@ export async function fetchStandings(date?: string): Promise<StandingsRecord[]> 
 }
 
 /**
- * Helper: Get NHLE headshot URL for a player (fallback if API doesn't return one)
- * Format: https://assets.nhle.com/mugsshots/nhl/latest/{playerId}.png
+ * Helper: Get NHLE headshot URL for a player
+ * Format: https://assets.nhle.com/mugs/nhl/{season}/{team}/{playerId}.png
  */
 export function getNHLHeadshotUrl(playerId: number): string {
-  return `https://assets.nhle.com/mugsshots/nhl/latest/${playerId}.png`;
+  return `https://assets.nhle.com/mugs/nhl/${CURRENT_SEASON}/${TEAM_ABBREV}/${playerId}.png`;
 }
 
 console.log(
