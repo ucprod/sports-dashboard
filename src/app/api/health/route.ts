@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkSupabaseConnection } from "@/lib/supabase";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Check Supabase connection
     const isConnected = await checkSupabaseConnection();

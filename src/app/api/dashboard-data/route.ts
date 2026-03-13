@@ -12,7 +12,7 @@ import {
 
 export const revalidate = 3600; // Revalidate every hour
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     console.log("[API] Dashboard data request received");
 

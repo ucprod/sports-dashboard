@@ -16,7 +16,7 @@ import {
 } from "@/lib/nhl-api";
 import { LOG_PREFIX } from "@/lib/constants";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const results: any = {
     timestamp: new Date().toISOString(),
     tests: [],

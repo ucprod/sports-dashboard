@@ -17,7 +17,7 @@ const CURRENT_SEASON = "20252026"; // Current season for 2025-26
  * Fetch team roster from NHLE API
  * Endpoint: /v1/roster/{team}/current
  */
-export async function fetchTeamRoster(teamId?: number): Promise<RosterPlayer[]> {
+export async function fetchTeamRoster(_teamId?: number): Promise<RosterPlayer[]> {
   const url = `${BASE_URL}/roster/${TEAM_ABBREV}/current`;
 
   console.log(`${LOG_PREFIX.NHL_API} Fetching roster for ${TEAM_ABBREV}...`);
@@ -165,9 +165,9 @@ export async function fetchPlayerDetail(playerId: number): Promise<PlayerDetail>
  * @param startDate - Ignored (kept for backward compatibility)
  */
 export async function fetchTeamSchedule(
-  teamId?: number,
-  season?: string,
-  startDate?: string
+  _teamId?: number,
+  _season?: string,
+  _startDate?: string
 ): Promise<ScheduleGame[]> {
   // Use /month/now endpoint - only returns current month, not whole season
   // Avoids the issue where /season/now only returns 90 games with old dates
@@ -306,7 +306,6 @@ export async function fetchStandings(date?: string): Promise<StandingsRecord[]> 
     const standings: StandingsRecord[] = Object.entries(standingsByDivision).map(([divisionName, teams]) => {
       // Get conference name from first team in division (all in same division have same conference)
       const conferenceName = teams[0]?.conferenceName || "";
-      const divisionAbbrev = teams[0]?.divisionAbbrev || "";
 
       return {
         division: {

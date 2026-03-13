@@ -65,7 +65,7 @@ export function getSupabaseClient(isAdmin = false) {
 // Health check
 export async function checkSupabaseConnection(): Promise<boolean> {
   try {
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
       .from("teams")
       .select("id")
       .limit(1);

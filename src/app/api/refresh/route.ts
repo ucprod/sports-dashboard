@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Verify this is from Vercel Cron (or local testing)
     // In production, Vercel sets x-vercel-cron header
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Allow manual triggering for testing
-  return POST(request);
+  return POST(_request);
 }
