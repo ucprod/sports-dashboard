@@ -10,10 +10,23 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
+// Validate required environment variables
+if (!supabaseUrl) {
   throw new Error(
-    "Missing Supabase configuration. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local"
+    "Missing NEXT_PUBLIC_SUPABASE_URL. Add it to your .env.local file with your Supabase project URL."
+  );
+}
+
+if (!supabaseAnonKey) {
+  throw new Error(
+    "Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Add it to your .env.local file with your Supabase anonymous key."
+  );
+}
+
+// Log warning if service key is missing (optional but needed for server-side operations)
+if (typeof window === "undefined" && !supabaseServiceKey) {
+  console.warn(
+    "[Supabase] SUPABASE_SERVICE_KEY not found. Server-side admin operations will not work. Add it to your .env.local if needed."
   );
 }
 

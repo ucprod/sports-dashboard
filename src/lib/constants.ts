@@ -7,7 +7,7 @@ export const NHL_CONFIG = {
   TEAM_ID: parseInt(process.env.NEXT_PUBLIC_NHL_TEAM_ID || "25"),
   TEAM_NAME: process.env.NEXT_PUBLIC_NHL_TEAM_NAME || "Edmonton Oilers",
   TEAM_ABBREVIATION: process.env.NEXT_PUBLIC_NHL_TEAM_ABBREVIATION || "EDM",
-  BASE_URL: "https://statsapi.nhl.com/api/v1",
+  BASE_URL: "https://api-web.nhle.com/v1",
 };
 
 // Refresh Schedule (Vercel Cron: 0 8 * * * = 3 AM EST = 8 AM UTC)
