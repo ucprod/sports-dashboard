@@ -41,3 +41,19 @@ body {
 .loading-spinner {
   @apply inline-block h-8 w-8 animate-spin rounded-full border-4 border-oilers-orange border-r-transparent;
 }
+
+/* Thin scrollbar for roster rows */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 69, 0, 0.3) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 69, 0, 0.3);
+  border-radius: 9999px;
+}

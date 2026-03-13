@@ -29,40 +29,30 @@ export async function GET(request: Request) {
     console.log(`[API] Schedule: ${schedule.length} games`);
     console.log(`[API] Standings: ${standings.length} divisions`);
 
-    // Use date-based logic: games before today = past, games today or later = upcoming
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset to start of day
+    // NHLE API status codes: "FINAL"/"OFF" = completed, "FUT"/"PRE"/"LIVE" = upcoming
+    const COMPLETED_STATES = ["FINAL", "OFF"];
+    const UPCOMING_STATES = ["FUT", "PRE", "LIVE"];
 
-    // Find last game: Most recent game with date BEFORE today (strictly before)
-    const pastGames = schedule.filter((g) => {
-      const gameDate = new Date(g.gameDate);
-      gameDate.setHours(0, 0, 0, 0);
-      return gameDate < today; // Strictly before today, not including today
-    });
+    const lastGame = schedule
+      .filter((g) => COMPLETED_STATES.includes(g.status.abstractGameState))
+      .sort(
+        (a, b) =>
+          new Date(b.gameDate).getTime() - new Date(a.gameDate).getTime()
+      )[0] || null;
 
-    const lastGame = pastGames.sort(
-      (a, b) =>
-        new Date(b.gameDate).getTime() - new Date(a.gameDate).getTime()
-    )[0] || null;
-
-    console.log(`[API] Found ${pastGames.length} past games`);
+    console.log(`[API] Found ${schedule.filter((g) => COMPLETED_STATES.includes(g.status.abstractGameState)).length} completed games`);
     if (lastGame) {
       console.log(`[API] Last game: ${lastGame.teams.away.team.name} @ ${lastGame.teams.home.team.name} on ${lastGame.gameDate}`);
     }
 
-    // Find next game: First game with date ON or AFTER today
-    const upcomingGames = schedule.filter((g) => {
-      const gameDate = new Date(g.gameDate);
-      gameDate.setHours(0, 0, 0, 0);
-      return gameDate >= today; // Today or later
-    });
+    const nextGame = schedule
+      .filter((g) => UPCOMING_STATES.includes(g.status.abstractGameState))
+      .sort(
+        (a, b) =>
+          new Date(a.gameDate).getTime() - new Date(b.gameDate).getTime()
+      )[0] || null;
 
-    const nextGame = upcomingGames.sort(
-      (a, b) =>
-        new Date(a.gameDate).getTime() - new Date(b.gameDate).getTime()
-    )[0] || null;
-
-    console.log(`[API] Found ${upcomingGames.length} upcoming games`);
+    console.log(`[API] Found ${schedule.filter((g) => UPCOMING_STATES.includes(g.status.abstractGameState)).length} upcoming games`);
     if (nextGame) {
       console.log(`[API] Next game: ${nextGame.teams.away.team.name} @ ${nextGame.teams.home.team.name} on ${nextGame.gameDate}`);
     }

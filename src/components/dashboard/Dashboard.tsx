@@ -1,7 +1,11 @@
 /**
  * Dashboard Component
- * Main wrapper that composes all dashboard sections
- * Fetches and displays roster, games, and standings
+ * Full-screen single-page layout. Nothing scrolls below the fold.
+ *
+ * Layout (top → bottom):
+ *   [Header strip] — team name + live indicator
+ *   [Game row]     — Last Game / Next Game as compact horizontal strips
+ *   [Roster]       — fills all remaining vertical space
  */
 
 "use client";
@@ -9,105 +13,73 @@
 import { useDashboardData } from "@/hooks/useDashboardData";
 import Roster from "./Roster";
 import GameCard from "./GameCard";
-import StandingsTable from "./StandingsTable";
 
 export default function Dashboard() {
   const { data, loading, error } = useDashboardData();
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="card border-l-4 border-red-500 bg-red-900 bg-opacity-20">
-            <h2 className="text-2xl font-bold text-red-400 mb-2">
-              ❌ Error Loading Dashboard
-            </h2>
-            <p className="text-gray-300 mb-4">{error}</p>
-            <p className="text-sm text-gray-400">
-              Please try refreshing the page or check the console for more
-              details.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading || !data) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header skeleton */}
-          <div className="mb-8">
-            <div className="h-12 bg-gray-700 rounded animate-pulse mb-2"></div>
-            <div className="h-6 bg-gray-700 rounded animate-pulse w-1/3"></div>
-          </div>
-
-          {/* Games skeleton */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="h-64 bg-gray-700 rounded animate-pulse"></div>
-            <div className="h-64 bg-gray-700 rounded animate-pulse"></div>
-          </div>
-
-          {/* Standings skeleton */}
-          <div className="h-96 bg-gray-700 rounded animate-pulse mb-8"></div>
-
-          {/* Roster skeleton */}
-          <div className="grid grid-cols-1 gap-6">
-            {[1, 2, 3].map((section) => (
-              <div key={section}>
-                <div className="h-8 bg-gray-700 rounded animate-pulse mb-4"></div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {[1, 2, 3, 4, 5].map((player) => (
-                    <div
-                      key={player}
-                      className="h-64 bg-gray-700 rounded animate-pulse"
-                    ></div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="h-full flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-[#1a0a0a] border border-red-500/40 rounded-xl p-6">
+          <h2 className="text-lg font-bold text-red-400 mb-2">
+            Dashboard unavailable
+          </h2>
+          <p className="text-gray-300 text-sm mb-3">{error}</p>
+          <p className="text-gray-500 text-xs">
+            Try refreshing the page. Check the browser console for details.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-oilers-orange mb-2">
-            🏒 Edmonton Oilers Dashboard
-          </h1>
-          <p className="text-gray-400">
-            Team roster, upcoming games, and standings
-          </p>
+    <div className="h-full flex flex-col overflow-hidden">
+
+      {/* ── Header strip ─────────────────────────────────────────────── */}
+      <header className="shrink-0 flex items-center justify-between px-4 sm:px-6 py-2.5 bg-[#0d1220] border-b border-white/5">
+        <div className="flex items-center gap-3">
+          {/* Orange accent bar */}
+          <div className="w-1 h-6 rounded-full bg-oilers-orange" />
+          <div>
+            <h1 className="text-sm sm:text-base font-bold text-white leading-none tracking-wide">
+              Edmonton Oilers
+            </h1>
+            <p className="text-[10px] text-gray-500 mt-0.5 leading-none">
+              2025–26 Season
+            </p>
+          </div>
         </div>
 
-        {/* Recent and Upcoming Games */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <GameCard game={data.lastGame} type="last" loading={loading} />
-          <GameCard game={data.nextGame} type="next" loading={loading} />
+        {/* Live data indicator */}
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[10px] text-gray-500 hidden sm:inline">
+            Updated daily · 3 AM EST
+          </span>
         </div>
+      </header>
 
-        {/* Team Standings */}
-        <div className="mb-8">
-          <StandingsTable
-            standing={data.oilersStanding}
-            loading={loading}
-            teamName="Edmonton Oilers"
-          />
-        </div>
+      {/* ── Game info row ─────────────────────────────────────────────── */}
+      <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 sm:px-6 pt-3 pb-2">
+        <GameCard game={data?.lastGame ?? null} type="last" loading={loading} />
+        <GameCard game={data?.nextGame ?? null} type="next" loading={loading} />
+      </div>
 
-        {/* Team Roster */}
-        <div>
-          <h2 className="text-3xl font-bold text-oilers-orange mb-6">
-            📋 Team Roster
-          </h2>
-          <Roster players={data.roster} loading={loading} />
-        </div>
+      {/* ── Section label ─────────────────────────────────────────────── */}
+      <div className="shrink-0 flex items-center gap-2 px-4 sm:px-6 pt-1 pb-2">
+        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">
+          Roster
+        </span>
+        <div className="flex-1 h-px bg-white/5" />
+      </div>
+
+      {/* ── Roster — fills remaining space ────────────────────────────── */}
+      <div className="flex-1 min-h-0 px-4 sm:px-6 pb-4 overflow-hidden">
+        <Roster
+          players={data?.roster ?? []}
+          loading={loading}
+        />
       </div>
     </div>
   );

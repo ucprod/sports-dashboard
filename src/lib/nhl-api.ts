@@ -66,6 +66,7 @@ export async function fetchTeamRoster(teamId?: number): Promise<RosterPlayer[]> 
           type: "",
           abbreviation: player.positionCode || "",
         },
+        headshotUrl: player.headshot || undefined,
       };
     });
 
@@ -73,7 +74,7 @@ export async function fetchTeamRoster(teamId?: number): Promise<RosterPlayer[]> 
       `${LOG_PREFIX.NHL_API} ✓ Fetched ${roster.length} players from roster`
     );
 
-    const forwards = roster.filter((p) => ["C", "L", "R", "LW", "RW"].includes(p.position.code));
+    const forwards = roster.filter((p) => ["C", "LW", "RW"].includes(p.position.code));
     const defense = roster.filter((p) => p.position.code === "D");
     const goalies = roster.filter((p) => p.position.code === "G");
 
@@ -359,11 +360,11 @@ export async function fetchStandings(date?: string): Promise<StandingsRecord[]> 
 }
 
 /**
- * Helper: Get NHLE headshot URL for a player
- * Format: https://assets.nhle.com/mugsshots/nhl/latest/skaters/{playerId}.png
+ * Helper: Get NHLE headshot URL for a player (fallback if API doesn't return one)
+ * Format: https://assets.nhle.com/mugsshots/nhl/latest/{playerId}.png
  */
 export function getNHLHeadshotUrl(playerId: number): string {
-  return `https://assets.nhle.com/mugsshots/nhl/latest/skaters/${playerId}.png`;
+  return `https://assets.nhle.com/mugsshots/nhl/latest/${playerId}.png`;
 }
 
 console.log(

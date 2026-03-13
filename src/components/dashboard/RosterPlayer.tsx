@@ -1,6 +1,7 @@
 /**
  * RosterPlayer Component
- * Displays a single player card with portrait, name, position, and stats
+ * Compact player card for the dense roster grid.
+ * Portrait dominates; jersey number, name, and position shown below.
  */
 
 import { Player } from "@/types/database";
@@ -12,67 +13,87 @@ interface RosterPlayerProps {
 
 export default function RosterPlayer({ player }: RosterPlayerProps) {
   const positionCode = player.position || "";
-  const positionName = {
-    C: "Center",
-    LW: "Left Wing",
-    RW: "Right Wing",
-    L: "Left",
-    R: "Right",
-    D: "Defense",
-    G: "Goalie",
-  }[positionCode] || positionCode;
 
-  // Determine if player is forward, defense, or goalie for styling
   const playerType =
-    ["C", "LW", "RW", "L", "R"].includes(positionCode)
+    ["C", "LW", "RW"].includes(positionCode)
       ? "forward"
       : positionCode === "D"
         ? "defense"
         : "goalie";
 
-  const borderColor = {
-    forward: "border-orange-500",
-    defense: "border-blue-500",
-    goalie: "border-yellow-500",
+  const accentClasses = {
+    forward: "border-oilers-orange/60 shadow-oilers-orange/10",
+    defense: "border-oilers-blue/70 shadow-oilers-blue/10",
+    goalie: "border-oilers-gold/60 shadow-oilers-gold/10",
   }[playerType];
+
+  const numberClasses = {
+    forward: "text-oilers-orange",
+    defense: "text-[#6699ff]",
+    goalie: "text-oilers-gold",
+  }[playerType];
+
+  const positionBadgeClasses = {
+    forward: "bg-oilers-orange/15 text-oilers-orange",
+    defense: "bg-oilers-blue/30 text-[#6699ff]",
+    goalie: "bg-oilers-gold/15 text-oilers-gold",
+  }[playerType];
+
+  const imageUrl = player.portrait_url || player.nhl_headshot_url;
 
   return (
     <div
-      className={`card border-2 ${borderColor} rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-200`}
+      className={`
+        group relative flex flex-col h-full bg-[#111827] rounded-lg border ${accentClasses}
+        overflow-hidden transition-all duration-200
+        hover:scale-[1.03] hover:shadow-lg hover:border-opacity-100
+        cursor-default select-none
+      `}
+      style={{ borderWidth: "1.5px" }}
     >
-      {/* Player Portrait */}
-      <div className="relative w-full h-48 bg-gray-700">
-        {player.portrait_url ? (
+      {/* Portrait area — flex-1 so it fills all space above the name strip */}
+      <div className="relative flex-1 min-h-0 bg-gradient-to-b from-[#1a2235] to-[#0d1320] overflow-hidden">
+        {imageUrl ? (
           <Image
-            src={player.portrait_url}
-            alt={player.first_name}
+            src={imageUrl}
+            alt={`${player.first_name} ${player.last_name}`}
             fill
-            className="object-cover"
+            sizes="(max-width: 640px) 40vw, (max-width: 1024px) 20vw, 12vw"
+            className="object-cover object-top"
+            style={{ imageRendering: "pixelated" }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-600 to-gray-700">
-            <span className="text-gray-400 text-sm text-center px-2">
-              {player.first_name?.[0]}
-              {player.last_name?.[0]}
+          /* Initials placeholder — keeps the pixel-art vibe with a retro monogram */
+          <div className="w-full h-full flex items-center justify-center">
+            <span className={`font-bold text-2xl opacity-30 ${numberClasses}`}>
+              {player.first_name?.[0]}{player.last_name?.[0]}
             </span>
           </div>
         )}
 
-        {/* Jersey Number Overlay */}
-        <div className="absolute top-2 right-2 bg-black bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center">
-          <span className="text-white font-bold text-sm">#{player.jersey_number}</span>
+        {/* Jersey number — top-left badge */}
+        <div className="absolute top-1.5 left-1.5 bg-black/70 backdrop-blur-sm rounded px-1.5 py-0.5">
+          <span className={`font-bold text-[11px] tabular-nums ${numberClasses}`}>
+            #{player.jersey_number}
+          </span>
+        </div>
+
+        {/* Position badge — top-right */}
+        <div className="absolute top-1.5 right-1.5">
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${positionBadgeClasses} backdrop-blur-sm`}>
+            {positionCode}
+          </span>
         </div>
       </div>
 
-      {/* Player Info */}
-      <div className="p-3">
-        {/* Name */}
-        <h3 className="font-bold text-white text-sm truncate">
-          {player.first_name} {player.last_name}
-        </h3>
-
-        {/* Position */}
-        <p className="text-gray-300 text-xs mb-2">{positionName}</p>
+      {/* Player name strip */}
+      <div className="px-2 py-1.5 text-center">
+        <p className="text-white font-semibold text-[11px] leading-tight truncate">
+          {player.last_name}
+        </p>
+        <p className="text-gray-500 text-[10px] truncate">
+          {player.first_name}
+        </p>
       </div>
     </div>
   );

@@ -56,7 +56,7 @@ export default function StandingsTable({
         <div className="bg-gray-700 rounded p-3">
           <p className="text-xs text-gray-400 mb-1">Division Rank</p>
           <p className="text-2xl font-bold text-white">
-            {standing.division_rank || "—"}
+            {standing.division_rank ?? "—"}
           </p>
         </div>
 

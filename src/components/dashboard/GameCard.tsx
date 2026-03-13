@@ -1,6 +1,6 @@
 /**
  * GameCard Component
- * Displays a single game (last game result or upcoming game)
+ * Compact horizontal strip showing a single game result or upcoming game.
  */
 
 import { Game } from "@/types/database";
@@ -13,126 +13,105 @@ interface GameCardProps {
 
 export default function GameCard({ game, type, loading = false }: GameCardProps) {
   const isLast = type === "last";
-  const title = isLast ? "🏁 Last Game" : "📅 Next Game";
-  const emptyMessage = isLast
-    ? "No completed games yet"
-    : "No upcoming games scheduled";
+  const label = isLast ? "LAST GAME" : "NEXT GAME";
+  const emptyMessage = isLast ? "No recent games" : "No games scheduled";
+
+  const labelColor = isLast ? "text-oilers-orange" : "text-[#6699ff]";
 
   if (loading) {
     return (
-      <div className="card">
-        <h2 className="card-title">{title}</h2>
-        <div className="bg-gray-700 rounded h-32 animate-pulse" />
+      <div className="flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3 h-full">
+        <div className="w-16 h-3 bg-white/10 rounded animate-pulse" />
+        <div className="flex-1 h-3 bg-white/10 rounded animate-pulse" />
+        <div className="w-10 h-5 bg-white/10 rounded animate-pulse" />
       </div>
     );
   }
 
   if (!game) {
     return (
-      <div className="card">
-        <h2 className="card-title">{title}</h2>
-        <div className="text-center py-6 text-gray-400">
-          <p>{emptyMessage}</p>
-        </div>
+      <div className={`flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3`}>
+        <span className={`text-[10px] font-bold tracking-widest shrink-0 ${labelColor}`}>{label}</span>
+        <span className="text-gray-500 text-xs">{emptyMessage}</span>
       </div>
     );
   }
 
-  // Determine which team is ours (Edmonton Oilers)
   const isTeamHome = game.is_team_home;
-  const ourTeam = isTeamHome ? game.home_team_name : game.away_team_name;
   const opponentTeam = isTeamHome ? game.away_team_name : game.home_team_name;
   const ourScore = isTeamHome ? game.home_score : game.away_score;
   const opponentScore = isTeamHome ? game.away_score : game.home_score;
 
-  // Format game date
-  const gameDate = new Date(game.game_date);
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  // Shorten opponent name to last word (e.g. "Toronto Maple Leafs" -> "Maple Leafs")
+  const opponentShort = opponentTeam.split(" ").slice(-2).join(" ");
+
+  const isDateOnly = !game.game_date.includes("T");
+  const gameDate = new Date(
+    isDateOnly ? game.game_date + "T12:00:00" : game.game_date
+  );
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
     timeZone: "America/Edmonton",
-  });
-  const formattedDate = dateFormatter.format(gameDate);
+    ...(isDateOnly ? {} : { hour: "numeric", minute: "2-digit" }),
+  }).format(gameDate);
 
-  // Determine game status styling
-  const isFinished = game.status === "Final";
-  let statusColor = "text-gray-400";
-  let resultText = "";
+  let resultBadge = "";
+  let resultClasses = "text-gray-500";
 
-  if (isFinished && ourScore !== null && opponentScore !== null) {
+  if (isLast && ourScore !== null && opponentScore !== null) {
     if (ourScore > opponentScore) {
-      statusColor = "text-green-400";
-      resultText = "W";
+      resultClasses = "text-emerald-400 bg-emerald-400/10 border border-emerald-400/30";
+      resultBadge = "W";
     } else if (ourScore < opponentScore) {
-      statusColor = "text-red-400";
-      resultText = "L";
+      resultClasses = "text-red-400 bg-red-400/10 border border-red-400/30";
+      resultBadge = "L";
     } else {
-      statusColor = "text-blue-400";
-      resultText = "T";
+      resultClasses = "text-gray-400 bg-gray-400/10 border border-gray-400/30";
+      resultBadge = "T";
     }
   }
 
   return (
-    <div className="card">
-      <h2 className="card-title">{title}</h2>
+    <div className="flex items-center gap-3 bg-[#111827] rounded-lg border border-white/5 px-4 py-3 h-full">
+      {/* Type label */}
+      <span className={`text-[10px] font-bold tracking-widest shrink-0 uppercase ${labelColor}`}>
+        {label}
+      </span>
 
-      <div className="space-y-4">
-        {/* Game Date */}
-        <div className="text-center text-sm text-gray-400">{formattedDate}</div>
+      {/* Divider */}
+      <div className="w-px h-6 bg-white/10 shrink-0" />
 
-        {/* Teams and Score */}
-        <div className="space-y-3">
-          {/* Home/Away indicator */}
-          <div className="text-center text-xs text-gray-500">
-            {isTeamHome ? "HOME" : "AWAY"} GAME
-          </div>
+      {/* Date */}
+      <span className="text-gray-400 text-xs shrink-0">{formattedDate}</span>
 
-          {/* Score Display */}
-          <div className="flex items-center justify-between text-center">
-            {/* Opponent Team */}
-            <div className="flex-1">
-              <p className="text-lg font-bold text-white mb-1">{opponentTeam}</p>
-              {isFinished && (
-                <p className="text-2xl font-bold text-gray-300">
-                  {opponentScore ?? "—"}
-                </p>
-              )}
-              {!isFinished && <p className="text-sm text-gray-400">TBA</p>}
-            </div>
+      {/* Home/Away */}
+      <span className="text-[10px] text-gray-600 uppercase tracking-wider shrink-0">
+        {isTeamHome ? "vs" : "@"}
+      </span>
 
-            {/* Divider / Status */}
-            <div className="flex-none mx-4">
-              {isFinished && resultText && (
-                <div className={`text-lg font-bold ${statusColor}`}>
-                  {resultText}
-                </div>
-              )}
-              {!isFinished && <div className="text-gray-500">@</div>}
-            </div>
+      {/* Opponent */}
+      <span className="text-white text-xs font-semibold truncate flex-1 min-w-0">
+        {opponentShort}
+      </span>
 
-            {/* Our Team (Oilers) */}
-            <div className="flex-1">
-              <p className="text-lg font-bold text-oilers-orange mb-1">
-                {ourTeam}
-              </p>
-              {isFinished && (
-                <p className="text-2xl font-bold text-oilers-orange">
-                  {ourScore ?? "—"}
-                </p>
-              )}
-              {!isFinished && <p className="text-sm text-gray-400">TBA</p>}
-            </div>
-          </div>
+      {/* Score or result */}
+      {isLast && ourScore !== null && opponentScore !== null ? (
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-white font-bold text-sm tabular-nums">
+            {ourScore}–{opponentScore}
+          </span>
+          {resultBadge && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${resultClasses}`}>
+              {resultBadge}
+            </span>
+          )}
         </div>
-
-        {/* Status */}
-        <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-700">
-          {game.status || (isFinished ? "Final" : "Scheduled")}
-        </div>
-      </div>
+      ) : (
+        <span className="text-gray-500 text-xs shrink-0">
+          {game.status || "Scheduled"}
+        </span>
+      )}
     </div>
   );
 }

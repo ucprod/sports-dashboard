@@ -16,6 +16,7 @@ export interface RosterPlayer {
     type: string;
     abbreviation: string;
   };
+  headshotUrl?: string;
 }
 
 export interface PlayerDetail {
