@@ -55,7 +55,8 @@ export default function RosterPlayer({ player }: RosterPlayerProps) {
     goalie: "text-oilers-gold",
   }[playerType];
 
-  const imageUrl = player.portrait_url || player.nhl_headshot_url;
+  // portrait_url = stored pixel art (future); fallback = on-demand pixel art route
+  const imageUrl = player.portrait_url || `/api/portrait/${player.nhl_id}`;
 
   return (
     <div
